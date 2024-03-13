@@ -9,6 +9,7 @@ Editar o alembic.ini com a string de conexao do banco
 Editar o migrations/env.py linha 18 e 19 para
     from models import base
     target_metadata = base.Base.metadata
+    apagar linha 21
 alembic revision --autogenerate -m "Migracao inicial"
 alembic upgrade head
 """
