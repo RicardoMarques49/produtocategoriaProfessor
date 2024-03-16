@@ -28,7 +28,7 @@ def selecionar(motor):
     : param o motor: motor de acesso ao banco
     :return: uuid com o id da categoria
     """
-    nome_parcial = input("Digite uma parte do nome da categoria desejada: ")
+    nome_parcial = input("Digite uma parte do nome do produto desejado: ")
     stmt = select(Produto).where(Produto.nome.ilike(f"%{nome_parcial}%")).order_by("nome")
     with Session(motor) as sessao:
         rset = sessao.execute(stmt).scalars()
@@ -59,6 +59,58 @@ def alterar(motor):
             produto.ativo = not produto.ativo
         sessao.commit()
         print("Produto alterado")
+
+def remover(motor):
+    id_produto = selecionar(motor)
+    with Session(motor) as sessao:
+        produto = sessao.get(Produto, id_produto)
+        confirma = input(f" Confirma a remoção do produto ' {produto.nome}' (S/N)?")
+        if confirma [0].lower() == "s":
+            sessao.delete(produto)
+            sessao.commit()
+            print("Produto removido")
+
+def listar(motor):
+    print("                 Nome                         Preço     Estoque  Ativo    Categoria ")
+    print("--------------------------------------      ----------  -------  -----  ------------")
+    with Session(motor) as sessao:
+        sentenca = select(Produto).order_by(Produto.nome)
+        rset = sessao.execute(sentenca).scalars()
+        for produto in rset:
+            ativo = "S" if produto.ativo else "N"
+            print(f" {produto.nome[:40]:40s}  {produto.preco:10.2f}  {produto.estoque:7d}     "f"{ativo}     {produto.categoria.nome}")
+
+def sem_estoque(motor):
+    print("                 Nome                         Preço     Estoque  Ativo    Categoria ")
+    print("--------------------------------------      ----------  -------  -----  ------------")
+    with Session(motor) as sessao:
+        sentenca = select(Produto).order_by(Produto.nome)
+        rset = sessao.execute(sentenca).scalars()
+        for produto in rset:
+            ativo = "S" if produto.ativo else "N"
+            print(f" {produto.nome[:40]:40s}  {produto.preco:10.2f}  {produto.estoque:7d}     "f"{ativo}     {produto.categoria.nome}")
+
+def vender(motor):
+    id_produto = selecionar(motor)
+    with Session(motor) as sessao:
+        produto = sessao.get(Produto, id_produto)
+        print(f"No momento,  {produto.estoque} unidades de {produto.nome} em estoque")
+        unidades = int(input("Vendereremos quantas? "))
+        if unidades <= produto.estoque:
+            novo_estoque = produto.estoque - unidades
+            print(f" Vendendo {unidades} unidades e deixando {novo_estoque} no estoque")
+            produto.estoque = novo_estoque
+            sessao.commit()
+        else:
+            print("Não temos estoque suficiente ... ")
+
+
+
+
+
+
+
+
 
 
 
